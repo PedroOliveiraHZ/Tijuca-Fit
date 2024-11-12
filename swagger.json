@@ -1,0 +1,1662 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Tijuca-Fit",
+    "description": "Essa API tem como objetivo descrever toda a funcionalidade do nosso código.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/"
+    }
+  ],
+  "paths": {
+    "/mandaresetPassword": {
+      "post": {
+        "summary": "Inicia o processo de redefinição de senha",
+        "description": "Recebe o e-mail do usuário e envia instruções para redefinição de senha. Não requer autenticação.",
+        "tags": [
+          "Autenticação"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "O e-mail do usuário que deseja redefinir a senha.",
+                    "example": "usuario@example.com"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "E-mail enviado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Mensagem de sucesso.",
+                      "example": "Instruções de redefinição de senha enviadas com sucesso."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Solicitação inválida. O e-mail fornecido é inválido."
+        },
+        "404": {
+          "description": "Usuário não encontrado. O e-mail fornecido não está associado a nenhuma conta."
+        },
+        "500": {
+          "description": "Erro no servidor ao tentar iniciar o processo de redefinição de senha."
+        }
+      }
+    },
+    "/resetPassword/{token}": {
+      "post": {
+        "summary": "Redefine a senha usando um token",
+        "description": "Recebe um token de redefinição e a nova senha, e atualiza a senha do usuário associado ao token.",
+        "tags": [
+          "Autenticação"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "description": "O token para validação da redefinição de senha.",
+            "schema": {
+              "type": "string",
+              "example": "123456abcdef"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "newPassword": {
+                    "type": "string",
+                    "description": "A nova senha do usuário.",
+                    "example": "NovaSenha@2024"
+                  }
+                },
+                "required": [
+                  "newPassword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha redefinida com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Mensagem de sucesso.",
+                      "example": "Senha redefinida com sucesso."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Solicitação inválida. O token fornecido é inválido ou a nova senha não atende aos critérios."
+        },
+        "401": {
+          "description": "Token de redefinição de senha inválido ou expirado."
+        },
+        "500": {
+          "description": "Erro no servidor ao tentar redefinir a senha."
+        }
+      }
+    },
+    "/imc": {
+      "post": {
+        "summary": "Calcula o Índice de Massa Corporal (IMC)",
+        "description": "Recebe dados como peso e altura de um usuário autenticado e retorna o IMC calculado.",
+        "tags": [
+          "IMC"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "peso": {
+                    "type": "number",
+                    "description": "Peso do usuário em quilogramas.",
+                    "example": 70.5
+                  },
+                  "altura": {
+                    "type": "number",
+                    "description": "Altura do usuário em metros.",
+                    "example": 1.75
+                  }
+                },
+                "required": [
+                  "peso",
+                  "altura"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "IMC calculado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "imc": {
+                      "type": "number",
+                      "description": "O valor do IMC calculado.",
+                      "example": 23.04
+                    },
+                    "classificacao": {
+                      "type": "string",
+                      "description": "Classificação do IMC de acordo com os valores de referência.",
+                      "example": "Peso normal"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Solicitação inválida. Verifique os dados enviados."
+        },
+        "401": {
+          "description": "Usuário não autenticado. O token de autenticação é necessário."
+        },
+        "500": {
+          "description": "Erro no servidor ao tentar calcular o IMC."
+        }
+      }
+    },
+    "/ficha": {
+      "post": {
+        "summary": "Envia fichas de treino",
+        "description": "Permite a um moderador ou administrador enviar fichas de treino para usuários. Esta rota requer autenticação e permissões adequadas.",
+        "tags": [
+          "Fichas de Treino"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "description": "O ID do usuário para o qual a ficha de treino é enviada.",
+                    "example": "23"
+                  },
+                  "series": {
+                    "type": "string",
+                    "description": "Número de séries a serem realizadas.",
+                    "example": "3"
+                  },
+                  "dSemana": {
+                    "type": "string",
+                    "description": "Dia da semana em que será feito o exercício.",
+                    "example": "1"
+                  },
+                  "ordem": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Sequência de exercícios.",
+                    "example": "1"
+                  },
+                  "exercicioId": {
+                    "type": "string",
+                    "description": "Id do exercício.",
+                    "example": 3
+                  },
+                  "reps": {
+                    "type": "string",
+                    "description": "Número de repetições por série.",
+                    "example": 12
+                  }
+                },
+                "required": [
+                  "userId",
+                  "ordem",
+                  "reps",
+                  "exercicioId",
+                  "dSemana",
+                  "series"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ficha de treino enviada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitação inválida. Verifique os dados enviados."
+          },
+          "401": {
+            "description": "Usuário não autenticado. O token de autenticação é necessário."
+          },
+          "403": {
+            "description": "Usuário não tem permissão. Apenas moderadores ou administradores podem acessar esta rota."
+          },
+          "500": {
+            "description": "Erro no servidor ao tentar enviar a ficha de treino."
+          }
+        }
+      }
+    },
+    "/fichas/{id}": {
+      "get": {
+        "summary": "Recupera uma ficha de treino específica",
+        "description": "Retorna a ficha de treino para o usuário autenticado com base no ID fornecido. Esta rota requer autenticação.",
+        "tags": [
+          "Fichas de Treino"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "O ID da ficha de treino a ser recuperada.",
+            "schema": {
+              "type": "string",
+              "example": "ficha123"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ficha de treino recuperada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "O ID da ficha de treino.",
+                      "example": "3"
+                    },
+                    "usuarioId": {
+                      "type": "string",
+                      "description": "O ID do usuário associado à ficha de treino.",
+                      "example": "3"
+                    },
+                    "dSemana": {
+                      "type": "string",
+                      "description": "Dia da semana em que será feito o exercício.",
+                      "example": "Segunda (1)"
+                    },
+                    "exercicioId": {
+                      "type": "string",
+                      "description": "Id do exercício.",
+                      "example": "3."
+                    },
+                    "series": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Número de séries a serem realizadas.",
+                      "example": "3"
+                    },
+                    "reps": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Quantidade de repetições a serem realizadas.",
+                      "example": "12"
+                    },
+                    "ordem": {
+                      "type": "integer",
+                      "description": "Ordem do exercício.",
+                      "example": "1"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Solicitação inválida. O ID fornecido é inválido."
+      },
+      "401": {
+        "description": "Usuário não autenticado. O token de autenticação é necessário."
+      },
+      "404": {
+        "description": "Ficha de treino não encontrada. Verifique se o ID está correto."
+      },
+      "500": {
+        "description": "Erro no servidor ao tentar recuperar a ficha de treino."
+      }
+    },
+    "/api/conquistas": {
+      "post": {
+        "summary": "Cria uma nova conquista",
+        "description": "Esta rota permite a criação de uma nova conquista. Apenas administradores autenticados podem acessar esta rota. Suporta o upload de arquivos relacionados à conquista.",
+        "tags": [
+          "Conquistas"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "O título da conquista.",
+                    "example": "Primeiro Lugar em Campeonato"
+                  },
+                  "nome": {
+                    "type": "string",
+                    "description": "O título da conquista.",
+                    "example": "Primeiro Lugar em Campeonato"
+                  },
+                  "descricao": {
+                    "type": "string",
+                    "description": "A descrição detalhada da conquista.",
+                    "example": "Conquista alcançada em competição nacional."
+                  },
+                  "imagem_da_conquista": {
+                    "type": "string",
+                    "description": "A descrição detalhada da conquista.",
+                    "example": "Conquista alcançada em competição nacional."
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "O arquivo da conquista (ex. imagem, PDF)."
+                  }
+                },
+                "required": [
+                  "nome",
+                  "descricao",
+                  "image",
+                  "id",
+                  "imagem_da_conquista"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conquista criada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "O ID da conquista criada.",
+                      "example": "12345"
+                    },
+                    "titulo": {
+                      "type": "string",
+                      "description": "O título da conquista.",
+                      "example": "Primeiro Lugar em Campeonato"
+                    },
+                    "descricao": {
+                      "type": "string",
+                      "description": "A descrição da conquista.",
+                      "example": "Conquista alcançada em competição nacional."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitação inválida. Verifique os dados enviados."
+          },
+          "401": {
+            "description": "Usuário não autenticado. O token de autenticação é necessário."
+          },
+          "403": {
+            "description": "Usuário não tem permissão. Apenas administradores podem acessar esta rota."
+          },
+          "500": {
+            "description": "Erro no servidor ao tentar criar a conquista."
+          }
+        }
+      }
+    },
+    "/api/conquista": {
+      "get": {
+        "summary": "Lista todas as conquistas",
+        "description": "Retorna uma lista de todas as conquistas disponíveis. Esta rota pode ser acessada por qualquer usuário.",
+        "tags": [
+          "Conquistas"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de conquistas retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "O ID da conquista.",
+                        "example": "12345"
+                      },
+                      "titulo": {
+                        "type": "string",
+                        "description": "O título da conquista.",
+                        "example": "Primeiro Lugar em Campeonato"
+                      },
+                      "descricao": {
+                        "type": "string",
+                        "description": "A descrição da conquista.",
+                        "example": "Conquista alcançada em competição nacional."
+                      },
+                      "data": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "A data de criação da conquista.",
+                        "example": "2024-01-01T12:00:00Z"
+                      },
+                      "urlArquivo": {
+                        "type": "string",
+                        "description": "URL para acessar o arquivo da conquista.",
+                        "example": "https://example.com/conquistas/12345.pdf"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro no servidor ao tentar recuperar as conquistas."
+          }
+        }
+      }
+    },
+    "/api/auth/signin": {
+      "post": {
+        "summary": "Autentica um usuário e retorna um token JWT",
+        "description": "Esta rota é para autenticar um usuário usando email e senha e retorna um token JWT válido.",
+        "tags": [
+          "Usuário"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "O email do usuário"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "A senha do usuário"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login bem-sucedido. Retorna um token JWT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "Token JWT para autorização de requisições futuras"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitação inválida. Credenciais de login ausentes ou inválidas."
+          },
+          "500": {
+            "description": "Erro interno do servidor ao tentar autenticar o usuário."
+          }
+        }
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "summary": "Autentica um usuário e retorna um token JWT",
+        "description": "Esta rota é para autenticar um usuário usando email e senha e retorna um token JWT válido.",
+        "tags": [
+          "Usuário"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "O email do usuário"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "O email do usuário"
+                  },
+                  "roles": {
+                    "type": "string",
+                    "description": "O email do usuário"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "A senha do usuário"
+                  }
+                },
+                "required": [
+                  "username",
+                  "email",
+                  "password",
+                  "roles"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login bem-sucedido. Retorna um token JWT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "Token JWT para autorização de requisições futuras"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitação inválida. Credenciais de login ausentes ou inválidas."
+          },
+          "500": {
+            "description": "Erro interno do servidor ao tentar autenticar o usuário."
+          }
+        }
+      }
+    },
+    "/api/auth/signout": {
+      "post": {
+        "summary": "Encerra a sessão do usuário",
+        "description": " Esta rota encerra a sessão de um usuário autenticado, invalidando o token de autenticação, se necessário. Ideal para implementar uma funcionalidade de logout seguro.",
+        "tags": [
+          "Usuário"
+        ],
+        "requestBody": {
+          "description": "Não é necessário fornecer dados no corpo da requisição para esta rota.",
+          "content": {}
+        },
+        "responses": {
+          "200": {
+            "description": "Sessão encerrada com sucesso."
+          },
+          "400": {
+            "description": "Solicitação inválida. Verifique os dados enviados."
+          },
+          "401": {
+            "description": "Usuário não autenticado ou token inválido."
+          },
+          "500": {
+            "description": "Erro no servidor ao tentar encerrar a sessão do usuário."
+          }
+        }
+      }
+    },
+    "/api/test/user": {
+      "get": {
+        "summary": "Retorna dados para usuários autenticados. Teste",
+        "description": "Esta rota é acessível apenas para usuários autenticados. Verifica se o usuário possui um token válido antes de retornar os dados, feita para teste",
+        "tags": [
+          "Usuário"
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna os dados"
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          },
+          "500": {
+            "description": "Erro ao buscar usuário ou papel de admin/moderator que exerce"
+          }
+        }
+      }
+    },
+    "/api/test/all": {
+      "get": {
+        "summary": "Retorna dados para usuários. Teste",
+        "description": "Esta rota é acessível para todos os usuários. Feita para teste",
+        "tags": [
+          "Usuário"
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna os dados"
+          }
+        }
+      }
+    },
+    "/api/mod": {
+      "get": {
+        "summary": "Retorna dados para usuários moderators. Teste",
+        "description": "Esta rota é para que somente moderators entrem.",
+        "tags": [
+          "Usuário"
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna os dados"
+          }
+        }
+      }
+    },
+    "/api/admin": {
+      "get": {
+        "summary": "Retorna dados para usuários admins. Teste",
+        "description": "Esta rota é para que somente admins entrem. Feita para teste.",
+        "tags": [
+          "Usuário"
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna os dados"
+          }
+        }
+      }
+    },
+    "/api/admin/allusers": {
+      "get": {
+        "summary": "Retorna dados somente para usuários admin ou moderators. ",
+        "description": "Esta rota é para listar todos os usuários.",
+        "tags": [
+          "Usuário"
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna os dados de imagem e usuários"
+          },
+          "500": {
+            "description": "Erro ao buscar usuários, mostrando o erro."
+          }
+        }
+      }
+    },
+    "/exercicios": {
+      "post": {
+        "summary": "Cadastro de exercicios",
+        "description": "Cadastre um novo exercicio",
+        "tags": [
+          "Exercicios"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "exercicio": {
+                    "type": "string",
+                    "description": "Nome do exercício"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Imagem do exercício"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Exercicio cadastrado com sucesso!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Imagem de exercicio enviada com sucesso."
+                    },
+                    "exercicio": {
+                      "$ref": "#/components/schemas/Exercicios"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno no servidor ao salvar o exercicio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Obter todos os exercícios",
+        "description": "Retorna uma lista de todos os exercícios cadastrados",
+        "tags": [
+          "Exercicios"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de exercícios",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Exercicios"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno no servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Retorna os dados"
+        },
+        "401": {
+          "description": "Caso tente acessar a próxima rota sem estar logado, retornará Não autorizado"
+        },
+        "403": {
+          "description": "Caso tente acessar uma rota que não tem permissão ou não está logado, retornará Erro! ou Requer papel de administrador/moderator ou nenhum token fornecido"
+        },
+        "500": {
+          "description": "Erro ao buscar usuário ou papel de admin/moderator que exerce"
+        }
+      }
+    },
+    "/api/admin/make-admin/{id}": {
+      "put": {
+        "summary": "Transforma usuário em admin",
+        "description": " Esta rota é usada por administradores para transformar um usuário em moderador.Requer autenticação de token de administrador.",
+        "tags": [
+          "Usuário"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "ID do usuário a ser transformado em moderador",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna os dados"
+          },
+          "401": {
+            "description": "Caso tente acessar a próxima rota sem estar logado, retornará Não autorizado"
+          },
+          "403": {
+            "description": "Caso tente acessar uma rota que não tem permissão ou não está logado, retornará Erro! ou Requer papel de administrador/moderator ou nenhum token fornecido"
+          },
+          "500": {
+            "description": "Erro ao buscar usuário ou papel de admin/moderator que exerce"
+          }
+        }
+      }
+    },
+    "/api/admin/remove-mod/{id}": {
+      "put": {
+        "summary": "Retira o papel do usuário de moderador",
+        "description": " Esta rota é usada por administradores para retirar o papel de moderador de um usuário.Requer autenticação de token de administrador.",
+        "tags": [
+          "Usuário"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "ID do usuário a ser reditrado o papel de moderador",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna os dados"
+          },
+          "401": {
+            "description": "Caso tente acessar a próxima rota sem estar logado, retornará Não autorizado"
+          },
+          "403": {
+            "description": "Caso tente acessar uma rota que não tem permissão ou não está logado, retornará Erro! ou Requer papel de administrador/moderator ou nenhum token fornecido"
+          },
+          "500": {
+            "description": "Erro ao buscar usuário ou papel de admin/moderator que exerce"
+          }
+        }
+      }
+    },
+    "/api/admin/remove-admin/{id}": {
+      "put": {
+        "summary": "Retira o papel do usuário de admin",
+        "description": " Esta rota é usada por administradores para retirar o papel de admin de um usuário.Requer autenticação de token de administrador.",
+        "tags": [
+          "Usuário"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "ID do usuário a ser retirado o papel de admin",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna os dados"
+          },
+          "401": {
+            "description": "Caso tente acessar a próxima rota sem estar logado, retornará Não autorizado"
+          },
+          "403": {
+            "description": "Caso tente acessar uma rota que não tem permissão ou não está logado, retornará Erro! ou Requer papel de administrador/moderator ou nenhum token fornecido"
+          },
+          "500": {
+            "description": "Erro ao buscar usuário ou papel de admin/moderator que exerce"
+          }
+        }
+      }
+    },
+    "/exercicios/{id}": {
+      "get": {
+        "summary": "Obter exercício por ID ",
+        "description": "Retorna um exercício pelo seu ID ",
+        "tags": [
+          "Exercicios"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID ou nome do exercício"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes do exercício",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Exercicios"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exercício não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feedback": {
+      "post": {
+        "summary": "Dê sua avaliação sobre o nosso aplicativo!",
+        "description": "Posta um feedback com nota de 1 a 5 estrelas e um comentário curto com suas considerações",
+        "tags": [
+          "Feedbacks"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comentario": {
+                    "type": "string",
+                    "description": "Faça um pequeno comentário sobre a nossa aplicação"
+                  },
+                  "classificacao": {
+                    "type": "string",
+                    "description": "Avalie o nosso programa"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "500": {
+            "description": "Houve algum erro ao enviar seu feedback, tente novamente mais tarde.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Feedbacks"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/perfil": {
+      "post": {
+        "summary": "Perfil de usuário",
+        "description": "Tenha acesso ao seu perfil de usuário, com suas informações pessoais e seu progresso",
+        "tags": [
+          "InfoUsers"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome_completo": {
+                    "type": "string",
+                    "description": "Preencha com seu nome completo"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Foto de usuário"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Informações enviadas com sucesso!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Sucesso!"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor ao salvar o perfil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Atualize seus dados",
+        "description": "Permita o usuário atualizar seus dados, incluindo a imagem de perfil",
+        "tags": [
+          "InfoUsers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Atualiza os dados de usuário a partir do ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome_completo": {
+                    "type": "string",
+                    "description": "Preencha com seu nome completo"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Informações enviadas com sucesso!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Sucesso!"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor ao salvar o perfil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sequencia": {
+      "get": {
+        "summary": "Obter a sequência de um aluno pelo ID do usuário",
+        "tags": [
+          "Sequência"
+        ],
+        "security": [
+          {
+            "authJwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Total de dias registrados e a sequência correspondente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Total de dias registrados:"
+                    },
+                    "sequencia": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Usuário não autenticado."
+          },
+          "500": {
+            "description": "Erro interno do servidor."
+          }
+        }
+      }
+    },
+    "/statusInfo": {
+      "get": {
+        "summary": "Obtém informações sobre o status do usuário.",
+        "tags": [
+          "Status"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informações do status retornadas com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalDuracao": {
+                      "type": "integer"
+                    },
+                    "totalGasto": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro ao obter informações de status."
+          }
+        }
+      }
+    },
+    "/getStatusInfo": {
+      "get": {
+        "summary": "Obtém informações detalhadas sobre o status do usuário.",
+        "tags": [
+          "Status"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informações detalhadas do status retornadas com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "duracao": {
+                        "type": "integer"
+                      },
+                      "gastoCalorico": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro ao obter informações detalhadas do status."
+          }
+        }
+      }
+    },
+    "/semanaAtual": {
+      "get": {
+        "summary": "Obtém os treinos da semana atual do usuário.",
+        "tags": [
+          "Status"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Treinos da semana atual retornados com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "treinosCompletos": {
+                      "type": "boolean"
+                    },
+                    "treinosSemanaAtual": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "diaSemana": {
+                            "type": "string"
+                          },
+                          "detalhes": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro ao obter os treinos da semana atual."
+          }
+        }
+      }
+    },
+    "/status": {
+      "post": {
+        "summary": "Guardar um treino que já foi concluído",
+        "description": "Armazena um treino concluido, quando o usuário finaliza seu treino do dia.",
+        "tags": [
+          "Status"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "boolean"
+                  },
+                  "fichaId": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Treino Concluido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Sucesso!"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno no servidor ao realizar sua requisição",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },   "/recordes": {
+      "post": {
+        "summary": "Posta os recordes do usuário",
+        "description": "Guarde os seus recordes pessoais de carga em qualquer exercício",
+        "tags": [
+          "Recordes"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ultimacarga": {
+                    "type": "string"
+                  },
+                  "carga_meta": {
+                    "type": "string"
+                  },
+                  "exercicioId": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Informações enviadas com sucesso!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Sucesso!"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor ao salvar recorde",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Veja todos os seus recordes",
+        "description": "Lista todos os seus recordes, permitindo que você acompanhe o seu progresso nas cargas de treino",
+        "tags": [
+          "Recordes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Seus recordes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Recordes"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno no servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Login bem-sucedido. Retorna um token JWT.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "Token JWT para autorização de requisições futuras"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Solicitação inválida. Credenciais de login ausentes ou inválidas."
+        },
+        "500": {
+          "description": "Erro interno do servidor ao tentar autenticar o usuário."
+        }
+      },
+      "components": {
+        "schemas": {
+          "Exercicios": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "exercicio": {
+                "type": "integer"
+              },
+              "nome_da_imagem": {
+                "type": "string"
+              },
+              "userId": {
+                "type": "integer"
+              },
+              "caminho": {
+                "type": "string"
+              }
+            },
+            "Error": {
+              "type": "object",
+              " properties": {
+                " message": {
+                  "type": 
+                    "string"
+                  
+                }
+              }
+            }
+          }
+        }
+      },
+    "/checkTreinoStatus": {
+      "get": {
+        "summary": "Verifica o status do treino do usuário.",
+        "tags": [
+          "Status"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status do treino verificado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "completedDays": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "dSemana": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro ao verificar status do treino."
+          }
+        }
+      },
+   
+        "Feedbacks": {
+          "type": "object",
+          "properties": {
+            "comentario": {
+              "type": "string"
+            },
+            "classificacao": {
+              "type": "string"
+            },
+            "userId": {
+              "type": "integer"
+            }
+          }
+        },
+        "Perfil": {
+          "type": "object",
+          "properties": {
+            "nome_completo": {
+              "type": "string"
+            },
+            "cpf": {
+              "type": "integer"
+            },
+            "telefone": {
+              "type": "integer"
+            },
+            "nome_da_imagem": {
+              "type": "string"
+            },
+            "caminho": {
+              "type": "string"
+            },
+            "userId": {
+              "type": "integer"
+            }
+          }
+        },
+        "Recordes": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "ultimacarga": {
+              "type": "string"
+            },
+            "carga_meta": {
+              "type": "string"
+            },
+            "exercicioId": {
+              "type": "integer"
+            }
+          }
+        },
+        "Error": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
